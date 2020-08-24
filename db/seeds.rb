@@ -5,3 +5,4 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+    pieces = Piece.create([{name: 'Armoire'}, {name: 'Chifferobe'}, {name: 'Hutch'}, {name: 'Sideboard'}, {name: 'Schrank'}, {name: 'Breakfront'}])

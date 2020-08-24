@@ -19,7 +19,7 @@
   overflow: scroll;
   position: relative;
   width: 100%;
-  border-top: 4px solid $white;
+  border-top: 4px solid white;
   padding-top: 24px;
 }
 
@@ -61,21 +61,15 @@ margin: 0;
   border-radius: 4px;
   position: relative;
   // box-shadow: 0px 0px 4px rgba(0,0,0,0.5);
-  box-shadow: $light-shadow;
-  // border: 1px solid #D0CFCE;
-}
-
-.diagram {
-  margin-left: 4px;
-  width: 66px;
-  height: 90px;
+  // box-shadow: $light-shadow;
+  border: 1px solid #D0CFCE;
 }
 
 .ylw {
   background-color: yellow;
 }
 .rng {
-  background-color: $white;
+  background-color: white;
 }
 .blu {
   background-color: blue;
@@ -101,6 +95,6 @@ margin: 0;
 }
 
 .save-changes-btn {
-  background-color: $redwood !important;
+  // background-color: $redwood !important;
   // font-size: 40px;
 }
