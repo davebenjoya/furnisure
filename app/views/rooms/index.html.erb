@@ -1,25 +1,19 @@
 <div class="container new-page-identifier mt-0" id="new-song-container">
   <div class="row" >
-
-    <div class="side-navbar d-flex flex-column align-items-center" id='library-container'>
-        <h2 class="col-2 pb-2">Library</h2>
-      <div id="library" class="d-flex flex-column align-items-center">
+    <h2 class="col-2 pb-2">Library</h2>
+    <div id="library-container">
+      <div id="library">
         <% pieces = Piece.all.to_a %>
         <% pieces.each_with_index do  |piece, index| %>
           <div id="piece<%= index %>" draggable="true" class="draggable rng" >
             <%= piece.name %>
-              </div>
-
-            <!-- </div> -->
+          </div>
         <% end %>
-           </div>
+      </div>
+
+      <div id="target-area1" class='col-8 target-area' style='position:relative'>
       </div>
     </div>
-
-    <div class='col' id="save-area">
-
-      <div id="target-area1" class='target-area' style='position:relative'>
-      </div>
     </div>
   </div>
 </div>

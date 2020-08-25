@@ -181,9 +181,13 @@ console.log("00000000");
       el.style.position = 'absolute';
       el.style.left = ( (ev.screenX - window.screenX) - document.getElementById('target-area1').parentNode.offsetLeft) - document.getElementById('target-area1').offsetLeft - offX + "px";
 // el.style.top = '0px';
-console.log(document.getElementById('target-area1').parentNode.offsetTop);
-console.log(ev.screenY - window.screenY);
-      el.style.top = ( (ev.screenY - window.screenY) - document.getElementById('target-area1').parentNode.offsetTop)  + offY + "px";
+console.log('window.screenY' + window.screenY);
+console.log("ev.pageY  " + ((ev.pageY)));
+const newY =  (ev.pageY- document.getElementById('target-area1').getBoundingClientRect().y) -offY
+// console.log("  " + ((ev.screenY - window.screenY) - document.getElementById('target-area1').offsetTop));
+      el.style.top = newY + "px";
+    // el.style.top = ( (ev.screenY - window.screenY) - document.getElementById('target-area1').parentNode.offsetTop) - document.getElementById('target-area1').offsetTop - offY + "px";
+
     }
 
     document.querySelector('#target-area1').addEventListener('drop', drop_handler);
