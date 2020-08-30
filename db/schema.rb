@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_08_24_200553) do
+ActiveRecord::Schema.define(version: 2020_08_26_121459) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,11 +19,19 @@ ActiveRecord::Schema.define(version: 2020_08_24_200553) do
     t.string "name"
     t.string "description"
     t.string "url"
+    t.integer "width"
+    t.integer "height"
+    t.integer "depth"
+    t.string "color"
   end
 
   create_table "rooms", force: :cascade do |t|
     t.string "name"
     t.string "size"
+    t.integer "width"
+    t.integer "length"
+    t.integer "height"
+    t.string "floor"
   end
 
 end

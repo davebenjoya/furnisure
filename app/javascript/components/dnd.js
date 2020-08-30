@@ -1,141 +1,263 @@
 const dnd = () => {
-console.log("00000000");
   const ta = document.getElementById("target-area1");
+  if (ta) {
     let numClones = 0;
     let currentDrag = null;
+    let currentRotate = null;
     let offX = 0;
     let offY = 0;
+    let rotating = false;
+    let rotateInit = 0;
+    let startX = 0;
+    let startY =0;
+
+    const rotateHandles = `<div id='handles'>
+    <div id='handle-top-left'>x</div>
+    <div id='handle-top-right'>x</div>
+    <div id='handle-bottom-left'>x</div>
+    <div id='handle-bottom-right'>x</div>
+    </div>`
+    document.addEventListener('keydown', logKey);
+    document.addEventListener('keyup', unlogKey);
+
+    function logKey(e) {
+      if(e.code === "AltLeft" ||  e.code === "AltRight") {
+      ta.removeEventListener('dragover', dragover_handler);
+      ta.removeEventListener('drop', drop_handler);
+      const clones = Array.from(document.querySelectorAll(".clone"));
+      clones.forEach(clone => {
+        clone.draggable=  false;
+        clone.removeEventListener('dragstart', dragstart_handler);
+        clone.addEventListener('mouseover', showRotateHandles);
+        clone.addEventListener('mouseout', hideRotateHandles);
+      });
+        rotating = true;
+        if (currentRotate) {
+          currentRotate.insertAdjacentHTML('beforeend', rotateHandles);
+        };
+      }
+    }
+    function unlogKey(e) {
+      if(e.code === "AltLeft" ||  e.code === "AltRight") {
+      ta.addEventListener('dragover', dragover_handler);
+      ta.addEventListener('drop', drop_handler);
+      const clones = Array.from(document.querySelectorAll(".clone"));
+      clones.forEach(clone => {
+        clone.draggable =  true;
+        clone.addEventListener('dragstart', dragstart_handler);
+        clone.removeEventListener('mouseover', showRotateHandles);
+        // clone.removeEventListener('mouseout', hideRotateHandles);
+      });
+        rotating = false;
+        hideRotateRemote();
+      }
+    }
+
+    function showRotateHandles (ev) {
+      currentRotate = ev.target;
+      currentRotate.insertAdjacentHTML('beforeend', rotateHandles);
+      currentRotate.addEventListener('mousedown', clickRotate);
+      document.addEventListener('mouseup', unclickRotate);
+    }
+
+    function hideRotateRemote() {
+      if (currentRotate) {
+        const handles = currentRotate.querySelector("#handles");
+        if (handles) {
+          handles.remove();
+        }
+      }
+
+      document.removeEventListener('mousemove' , trackRotation);
+    }
+
+    function hideRotateHandles () {
+      hideRotateRemote();
+      currentRotate = null;
+    }
 
 
+
+
+    function getCurrentRotation(el){
+      var st = window.getComputedStyle(el, null);
+      var tm = st.getPropertyValue("-webkit-transform") ||
+               st.getPropertyValue("-moz-transform") ||
+               st.getPropertyValue("-ms-transform") ||
+               st.getPropertyValue("-o-transform") ||
+               st.getPropertyValue("transform") ||
+               "none";
+      if (tm != "none") {
+        var values = tm.split('(')[1].split(')')[0].split(',');
+        /*
+        a = values[0];
+        b = values[1];
+        angle = Math.round(Math.atan2(b,a) * (180/Math.PI));
+        */
+        //return Math.round(Math.atan2(values[1],values[0]) * (180/Math.PI)); //this would return negative values the OP doesn't wants so it got commented and the next lines of code added
+        var angle = Math.round(Math.atan2(values[1],values[0]) * (180/Math.PI));
+        return (angle < 0 ? angle + 360 : angle); //adding 360 degrees here when angle < 0 is equivalent to adding (2 * Math.PI) radians before
+      }
+      return 0;
+    }
+
+
+
+
+
+
+    function clickRotate(ev) {
+      startX = ev.clientX;
+      startY = ev.clientY;
+      rotateInit = getCurrentRotation(ev.target);
+      document.addEventListener('mousemove' , trackRotation);
+    }
+
+    function unclickRotate(ev) {
+      ev.target.removeEventListener('mousedown', clickRotate);
+      ev.target.removeEventListener('mouseup' , unclickRotate);
+      document.removeEventListener('mousemove' , trackRotation);
+      if (ev.shiftKey) {
+      const myRotate = getCurrentRotation(ev.target);
+      const rotateToSnap = myRotate % 45;
+      let snappedRotate = 0;
+      if (rotateToSnap < 22.5 ) {
+        snappedRotate = myRotate - rotateToSnap;
+      } else {
+        snappedRotate  = myRotate + (45 - rotateToSnap);
+      }
+      ev.target.style.transform = `rotate(${snappedRotate}deg`;
+      }
+    }
+
+
+
+
+
+    function trackRotation (ev) {
+      const deltaX = ev.clientX - startX;
+      const deltaY = ev.clientY - startY;
+
+      const verticalBorder = (ev.target.getBoundingClientRect().x) +
+      (ev.target.getBoundingClientRect().width / 2 );
+
+      const horizontalBorder = ev.target.getBoundingClientRect().y +
+      (ev.target.getBoundingClientRect().height / 2);
+
+      let quadrant = 1;
+
+      if (ev.clientX > verticalBorder) {
+        quadrant += 1;
+      }
+
+      if (ev.clientY > horizontalBorder) {
+        quadrant += 2;
+      }
+
+      let compositeDelta = 0;
+
+      switch (quadrant) {
+        case 1 :
+          compositeDelta = deltaX + (deltaY * -1 );
+          break;
+        case 2 :
+          compositeDelta = deltaX + deltaY;
+          break;
+        case 3 :
+          compositeDelta = (deltaX + deltaY) * -1;
+          break;
+        case 4 :
+          compositeDelta = (deltaX * -1 ) + deltaY;
+          break;
+      }
+      // ev.target.style.transform = `rotate(30deg)`;
+      const newRotate = rotateInit + compositeDelta;
+      ev.target.style.transform = `rotate(${newRotate}deg)`;
+        // console.log("rotateInit " + rotateInit);
+
+      startX = ev.clientX;
+      startY = ev.clientY;
+      rotateInit = getCurrentRotation(ev.target);
+    }
 
     const dragstart_handler = (ev) => {
-      currentDrag = ev.currentTarget;
-      console.log("currentDrag " + currentDrag);
-      ev.dataTransfer.setData("application/my-app", currentDrag.id);
-      currentDrag.addEventListener("onMouseUp", dropChord(event), false);
+      // ev.preventDefault();
+      currentDrag = ev.target;
+        ev.dataTransfer.setData("application/my-app", currentDrag.id);
+        // currentDrag.addEventListener("onMouseUp", dropChord(event), false);
+        setMouseOffsets();
 
-      if (currentDrag.parentNode.id != "library" ) {
-        currentDrag.addEventListener('dragstart', handleDragStart, false);
-        currentDrag.addEventListener('dragend', handleDragEnd, false);
-      }
-      function handleDragStart(e) {
+        // function handleDragStart(e) {
 
-        this.style.opacity = '0.3';
-        this.style.transition = "opacity .5s";
-      }
+        //   this.style.opacity = '0.3';
+        //   this.style.transition = "opacity .5s";
+        // }
 
 
-      function handleDragEnd(e) {
-        this.style.opacity = '1';
-        this.style.transition = "none";
-        this.removeEventListener('dragend', handleDragEnd, false);
-      }
+        // function handleDragEnd(e) {
+        //   this.style.opacity = '1';
+        //   this.style.transition = "none";
+        //   this.removeEventListener('dragend', handleDragEnd, false);
+        // }
+    };
 
-      function dropChord(event) {
-          offX = event.offsetX;
-          offY = event.offsetY;
-      }
+
+
+    function setMouseOffsets() {
+      offX = event.offsetX;
+      offY = event.offsetY;
     }
 
     document.querySelectorAll('.draggable').forEach( dr => {
       dr.addEventListener('dragstart', dragstart_handler);
     })
 
+
+
     const dragover_handler = (ev) => {
+      // console.log("dragover_handler");
       ev.preventDefault();
 
-      const clones =  Array.from(ev.target.children);
-      const sortedClones = clones.sort((a, b) => parseInt(a.style.left) - parseInt(b.style.left));
-      let leftClones = [];
-      let rightClones = [];
-      sortedClones.forEach(function(element) {
-          if (element != currentDrag) {
-          if (parseInt(element.style.left) < parseInt(ev.clientX - ta.getBoundingClientRect().x)) {
-            leftClones.unshift(element); // from center to left
-          } else {
-            rightClones.push(element); // from center to right
+      checkBoundaries (ev);
+
+      if (rotating) {
+        console.log("fdfdsfdsfDSFdsF");
+        } else {
+        let overlap = 0;
+        Array.from(ev.target.children).forEach(function(element) {
+          if (element != currentDrag && dragIntersection(ev, element)) {
+            console.log('true');
           }
-        }
-      });
-
-      let overlap = 0;
-      if (leftClones.length > 0) {
-        if (dragIntersection(ev, leftClones[0]) == true ) {
-          overlap = dragLeftOverlap(ev, leftClones[0]);
-          ripple(leftClones, overlap, 'left');
-        }
+        });
       }
 
-      if (rightClones.length > 0) {
-        if (dragIntersection(ev, rightClones[0]) == true ) {
-          overlap = dragRightOverlap(ev, rightClones[0]);
-          rippleRight(rightClones, overlap);
-          // ripple(rightClones, overlap, 'right');
-        }
-      }
     };
 
-    Array.from(document.querySelectorAll('.target-area')).forEach( tgt => {
-      tgt.addEventListener('dragover', dragover_handler);
-    });
+    document.querySelector('#target-area1').addEventListener('dragover', dragover_handler);
 
-
-    function ripple(array, overlap, direction) {
-      let ovr = overlap;
-      let colliding = true;
-      let oldX = parseInt(array[0].style.left);
-      let newX = direction == 'left' ? (oldX - (ovr + 4)) : oldX + (ovr + 4) ;
-      array[0].style.left = newX + 'px';
-      checkBoundaries(array[0]);
-
-      for (let i = 0; i < array.length - 1; i++) {
-        const chord1 = direction === 'left' ? array[i] : array[i + 1];
-        const chord2 = direction ==='left' ? array[i + 1] : array[i];
-        if (arrayIntersection(chord1, chord2)) {
-        ovr = arrayOverlap(chord1, chord2);
-        oldX = parseInt(chord2.style.left);
-        newX = direction == 'left' ? (oldX - ovr) -4 : oldX + (ovr + 4) ;
-        chord2.style.left = newX + 'px';
-        checkBoundaries(chord2);
-        }
-      }
-    };
-
-    function rippleRight(array, overlap) {
-      let ovr = overlap;
-      let colliding = true;
-      let oldX = parseInt(array[0].style.left);
-      let newX = oldX + (ovr + 4) ;
-      array[0].style.left = newX + 'px';
-      checkBoundaries(array[0]);
-
-      for (let i = 0; i < array.length - 1; i++) {
-        const chord1 = array[i];
-        const chord2 = array[i + 1];
-        if (arrayIntersection(chord2, chord1)) {
-        ovr = arrayOverlap(chord2, chord1);
-        oldX = parseInt(chord2.style.left);
-        newX = oldX + (ovr + 4);
-        chord2.style.left = newX + 'px';
-        checkBoundaries(chord2);
-        }
-      }
-    };
-
-    function checkBoundaries (el) {
-      if (el.getBoundingClientRect().x <= ta.getBoundingClientRect().x) {
-        deleteLeft(el);
+    function checkBoundaries (ev) {
+      if (ev.clientX - offX <= ta.getBoundingClientRect().x) {
+        // currentDrag.style.position = 'absolute';
+        // currentDrag.style.left = ta.getBoundingClientRect().x + 'px';
+        console.log('currentDrag.id' + currentDrag.id);
       };
-      if (el.getBoundingClientRect().x + el.getBoundingClientRect().width >= ta.getBoundingClientRect().x + ta.getBoundingClientRect().width) {
-        deleteLeft(el);
-      };
+      // if (ev.currentTarget.getBoundingClientRect().x + el.getBoundingClientRect().width >= ta.getBoundingClientRect().x + ta.getBoundingClientRect().width) {
+      //   // (el);
+      // };
     };
 
     function dragIntersection(ev, element) {
-      return !(
-       ( element.getBoundingClientRect().x > (ev.clientX - offX) + currentDrag.getBoundingClientRect().width ||
-            element.getBoundingClientRect().x + element.getBoundingClientRect().width < (ev.clientX - offX))
-      );
+        // console.log('element.getBoundingClientRect().x + element.getBoundingClientRect().width > (ev.clientX - offX)   '  + (element.getBoundingClientRect().x + element.getBoundingClientRect().width > (ev.clientX - offX)));
+        // console.log(' (ev.clientX - offX) + currentDrag.getBoundingClientRect().width > element.getBoundingClientRect().x)    '  +  (ev.clientX - offX) + currentDrag.getBoundingClientRect().width > element.getBoundingClientRect().x);
+        // console.log('(element.getBoundingClientRect().y + element.getBoundingClientRect().height < (ev.clientY - offY)   '  + (element.getBoundingClientRect().y + element.getBoundingClientRect().height < (ev.clientY - offY)));
+        // console.log('(ev.clientY - offY) + currentDrag.getBoundingClientRect().height > element.getBoundingClientRect().y)   '  + (ev.clientY - offY) + currentDrag.getBoundingClientRect().height > element.getBoundingClientRect().y);
+
+
+
+       return ( element.getBoundingClientRect().x + element.getBoundingClientRect().width > (ev.clientX - offX) &&
+          (ev.clientX - offX) + currentDrag.getBoundingClientRect().width > element.getBoundingClientRect().x) &&
+          (element.getBoundingClientRect().y + element.getBoundingClientRect().height > (ev.clientY - offY) &&
+          (ev.clientY - offY) + currentDrag.getBoundingClientRect().height > element.getBoundingClientRect().y);
     }
 
     function dragLeftOverlap(ev, element) {
@@ -147,7 +269,11 @@ console.log("00000000");
     }
 
     function arrayIntersection(element1, element2) {
-      return !(element2.getBoundingClientRect().x + element2.getBoundingClientRect().width < element1.getBoundingClientRect().x);
+     return ( element2.getBoundingClientRect().x + element2.getBoundingClientRect().width > element1.getBoundingClientRect().x &&
+        element1.getBoundingClientRect().x + element1.getBoundingClientRect().width > element2.getBoundingClientRect().x  &&
+        element2.getBoundingClientRect().y + element2.getBoundingClientRect().height > element1.getBoundingClientRect().y &&
+        element1.getBoundingClientRect().y + element1.getBoundingClientRect().height > element2.getBoundingClientRect().y
+        );
     }
 
     function arrayOverlap(element1, element2) {
@@ -155,23 +281,28 @@ console.log("00000000");
     }
 
     function drop_handler(ev) {
+
+        currentDrag.addEventListener('dragstart', dragstart_handler)
       ev.preventDefault();
 
-      console.log("ev " + ev);
       const data = ev.dataTransfer.getData("application/my-app");
       let el;
-      const clone = document.getElementById(data).parentNode.id == "library" ? true : false;
+      // console.log("document.getElementById(data).parentNode.id  " + document.getElementById(data))
+      const clone = document.getElementById(data).parentNode.parentNode.id == "library" ? true : false;
       if (clone) {
         el  = document.getElementById(data).cloneNode([true]);
         el.id = "clone" + numClones;
         numClones ++ ;
-        el.class = 'clone';
+        el.classList.add('clone');
+        el.style.width = el.dataset.roomwidth + "px";
+        el.style.height = el.dataset.roomheight + "px";
+        console.log('el.dataset.roomwidth  ' +  el.dataset.roomwidth);
         el.addEventListener("dragstart", dragstart_handler);
         // const tr = el.querySelector(".trash");
         // tr.addEventListener('click', deleteChord);
         // tr.insertAdjacentHTML("beforeend", '<div class="delete-chord"><i class="fas fa-trash"></i></div> ')
       } else {
-        console.log ("no clone")
+        // console.log ("no clone")
         el  = document.getElementById(data);
       }
 
@@ -179,15 +310,24 @@ console.log("00000000");
         ev.target.appendChild(el);
       }
       el.style.position = 'absolute';
-      el.style.left = ( (ev.screenX - window.screenX) - document.getElementById('target-area1').parentNode.offsetLeft) - document.getElementById('target-area1').offsetLeft - offX + "px";
-// el.style.top = '0px';
-console.log('window.screenY' + window.screenY);
-console.log("ev.pageY  " + ((ev.pageY)));
-const newY =  (ev.pageY- document.getElementById('target-area1').getBoundingClientRect().y) -offY
-// console.log("  " + ((ev.screenY - window.screenY) - document.getElementById('target-area1').offsetTop));
-      el.style.top = newY + "px";
-    // el.style.top = ( (ev.screenY - window.screenY) - document.getElementById('target-area1').parentNode.offsetTop) - document.getElementById('target-area1').offsetTop - offY + "px";
+      let newX = ((ev.screenX - window.screenX) - document.getElementById('target-area1').parentNode.offsetLeft)
+      - document.getElementById('target-area1').offsetLeft - offX;
+      let newY =  ev.pageY - document.getElementById('target-area1').getBoundingClientRect().y - offY;
+      if (newX < 0) {
+        newX = 0;
+      }
+      if (newY < 0) {
+        newY = 0;
+      }
+  if (newX + parseFloat(el.style.width) > document.getElementById('target-area1').getBoundingClientRect().width) {
+        newX = document.getElementById('target-area1').getBoundingClientRect().width - parseFloat(el.style.width) - 2;
+      }
+ if (newY + parseFloat(el.style.height) > document.getElementById('target-area1').getBoundingClientRect().height) {
+        newY = document.getElementById('target-area1').getBoundingClientRect().height - parseFloat(el.style.height) - 2;
+      }
 
+      el.style.left = newX + "px";
+      el.style.top = newY + "px";
     }
 
     document.querySelector('#target-area1').addEventListener('drop', drop_handler);
@@ -205,6 +345,15 @@ const newY =  (ev.pageY- document.getElementById('target-area1').getBoundingClie
       // // el.style = 'transform: scale(0, .5); opacity:0; transition: all .5s;';
       // el.style = 'opacity:0; left:${left}; transition: all .5s;';
     }
+
+
+
+
+
+
+
+  }
+
   };
 
 export { dnd };

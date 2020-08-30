@@ -1,19 +1,10 @@
-<div class="container new-page-identifier mt-0" id="new-song-container">
-  <div class="row" >
-    <h2 class="col-2 pb-2">Library</h2>
-    <div id="library-container">
-      <div id="library">
-        <% pieces = Piece.all.to_a %>
-        <% pieces.each_with_index do  |piece, index| %>
-          <div id="piece<%= index %>" draggable="true" class="draggable rng" >
-            <%= piece.name %>
-          </div>
-        <% end %>
-      </div>
-
-      <div id="target-area1" class='col-8 target-area' style='position:relative'>
-      </div>
+<div class="cards">
+  <% @rooms.each do |room| %>
+    <%= link_to room_path(room) do %>
+    <div class="card ">
+      <h5 class="card-title mt-3"><%= room.name %></h5>
     </div>
-    </div>
-  </div>
+    <% end %>
+  <% end %>
 </div>
+

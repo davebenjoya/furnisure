@@ -24,7 +24,7 @@ gem 'jbuilder', '~> 2.7'
 gem 'simple_form'
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
-
+gem 'bootstrap', '~> 5.0.0.alpha1'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
