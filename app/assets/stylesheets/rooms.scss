@@ -2,6 +2,12 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: https://sass-lang.com/
 
+:root {
+  --disc-circ: 200px;
+  --disc-left: 0px;
+  --disc-top: 0px;
+}
+
 #library-container {
   height: 100%;
   max-height: 100%;
@@ -20,6 +26,18 @@
   // width: 100%;
   border-top: 4px solid white;
   padding-top: 24px;
+}
+
+#disc {
+  width: var(--disc-circ);
+  height: var(--disc-circ);
+  left: var(--disc-left);
+  top: var(--disc-top);
+    position: absolute;
+  background-color: rgba(256,256, 256, .5);
+  border-radius: 50%;
+  border: 1px solid black;
+  z-index: 9;
 }
 
 .api-data {
@@ -75,7 +93,18 @@ margin: 0;
   // width: 67%;
   padding: 0px;
   border: 1px solid #D0CFCE;
+  background-size: 25%;
+  background-repeat: repeat;
 }
+
+.pine {
+  background-image: image-url('pine.jpg');
+}
+
+.grey_carpet {
+  background-image: image-url('grey_carpet.jpg');
+}
+
 
 .library-item {
   margin: 4px 0px;
@@ -86,20 +115,21 @@ margin: 0;
 }
 
 
+
 .draggable {
   // display: flex;
   // justify-content: space-between;
-  width: 100px;
-  height: 100px;
+
   padding: 0px;
   // margin: 8px;
   border-radius: 4px;
   position: relative;
-  // box-shadow: 0px 0px 4px rgba(0,0,0,0.5);
-  // box-shadow: $light-shadow;
-  // border: 1px solid #D0CFCE;
+  z-index: 10;
 }
 
+.clone {
+  box-shadow: 0px 0px 4px rgba(50,50,50,0.6);
+}
 
  #box{
   width:400px;

@@ -1,10 +1,11 @@
+<div class="container">
 <%= @room.name %>
 
-      <p class="card-text less-opacity"><%= @room.floor %></p>
+</div>
 
 <div class="container new-page-identifier mt-0" id="new-song-container">
   <div class="row" >
-    <h2 class="col-3 p-2">Library</h2>
+    <h5 class="col-3 p-2">Library</h5>
     <div id="library-container">
       <div id="library">
         <% pieces = Piece.all.to_a %>

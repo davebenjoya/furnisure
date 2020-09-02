@@ -8,15 +8,18 @@ const dnd = () => {
     let offY = 0;
     let rotating = false;
     let rotateInit = 0;
+    const rotateBreak = 42; // distance from moment of rotation where rotated div needs to be 'sped up' or 'slowed down' to track cursor
     let startX = 0;
     let startY =0;
 
     const rotateHandles = `<div id='handles'>
-    <div id='handle-top-left'>x</div>
-    <div id='handle-top-right'>x</div>
-    <div id='handle-bottom-left'>x</div>
-    <div id='handle-bottom-right'>x</div>
+    <div id='handle-top-left'>xxxx</div>
+    <div id='handle-top-right'>xxxx</div>
+    <div id='handle-bottom-left'>xxxx</div>
+    <div id='handle-bottom-right'>xxxx</div>
     </div>`
+
+    const rotateDisc = `<div id='disc'></div>`;
     document.addEventListener('keydown', logKey);
     document.addEventListener('keyup', unlogKey);
 
@@ -29,11 +32,13 @@ const dnd = () => {
         clone.draggable=  false;
         clone.removeEventListener('dragstart', dragstart_handler);
         clone.addEventListener('mouseover', showRotateHandles);
-        clone.addEventListener('mouseout', hideRotateHandles);
+        // clone.addEventListener('mouseout', hideRotateHandles);
       });
         rotating = true;
         if (currentRotate) {
-          currentRotate.insertAdjacentHTML('beforeend', rotateHandles);
+          currentRotate.parentNode.insertAdjacentHTML('beforebegin', rotateDisc);
+          currentRotate.querySelector('#disc').style.width = currentRotate.style.width;
+          currentRotate.querySelector('#disc').style.height = currentRotate.style.width;
         };
       }
     }
@@ -53,18 +58,44 @@ const dnd = () => {
       }
     }
 
+
+//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+////////////////////     R O T A T E    /////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+
+
     function showRotateHandles (ev) {
       currentRotate = ev.target;
-      currentRotate.insertAdjacentHTML('beforeend', rotateHandles);
-      currentRotate.addEventListener('mousedown', clickRotate);
+      currentRotate.insertAdjacentHTML('beforeend', rotateDisc);
+      const disc = currentRotate.querySelector("#disc");
+
+      disc.style.setProperty('--disc-circ', parseInt(currentRotate.style.width) + 20 + 'px');
+      const newTop = (((disc.getBoundingClientRect().height / 2) * -1) + (currentRotate.getBoundingClientRect().height /2 ) + 'px');
+      const newLeft = (((disc.getBoundingClientRect().width / 2) * -1) + (currentRotate.getBoundingClientRect().width /2 ) + 'px');
+      console.log("disc.getBoundingClientRect().height/2  "  + disc.getBoundingClientRect().height/2);
+      console.log("currentRotate.getBoundingClientRect().height/2  "   + currentRotate.getBoundingClientRect().height/2);
+
+      disc.style.setProperty('--disc-top', newTop);
+      disc.style.setProperty('--disc-left', newLeft);
+      // currentRotate.addEventListener('mousedown', clickRotate);
+      currentRotate.removeEventListener('mouseover', showRotateHandles);
+      disc.addEventListener('mousedown', clickRotate);
+      disc.addEventListener('mouseout', hideRotateHandles);
       document.addEventListener('mouseup', unclickRotate);
     }
 
     function hideRotateRemote() {
       if (currentRotate) {
+        currentRotate.addEventListener('mouseover', showRotateHandles);
         const handles = currentRotate.querySelector("#handles");
         if (handles) {
           handles.remove();
+        }
+        const disc = currentRotate.querySelector("#disc");
+        if (disc) {
+          disc.remove();
         }
       }
 
@@ -101,11 +132,6 @@ const dnd = () => {
       return 0;
     }
 
-
-
-
-
-
     function clickRotate(ev) {
       startX = ev.clientX;
       startY = ev.clientY;
@@ -135,6 +161,21 @@ const dnd = () => {
 
 
     function trackRotation (ev) {
+      const fulcrumX = ev.target.getBoundingClientRect().x + ( ev.target.getBoundingClientRect().width / 2 );
+      const fulcrumY = ev.target.getBoundingClientRect().y + ( ev.target.getBoundingClientRect().height / 2 );
+      const compStyle = window.getComputedStyle(ev.target);
+      const matrix = compStyle.transform.split("(");
+      if (matrix[1]) {
+        const matrixArray =  matrix[1].split(",");
+        let rotation = ((180/Math.PI) * Math.atan2( ((0*matrixArray[2])+(1*matrixArray[3])),((0*matrixArray[0])-(1*matrixArray[1]))) - 90);
+        // console.log(rotation);
+      };
+
+      const xDiff = ev.clientX - fulcrumX;
+      const yDiff = ev.clientY - fulcrumY;
+      const hypotenuse = Math.sqrt((xDiff**2) + (yDiff**2));
+      const hypMultiplier = .5;
+      // console.log(hypotenuse);
       const deltaX = ev.clientX - startX;
       const deltaY = ev.clientY - startY;
 
@@ -171,6 +212,17 @@ const dnd = () => {
           break;
       }
       // ev.target.style.transform = `rotate(30deg)`;
+      console.log("-------------------");
+      console.log(compositeDelta);
+      if (hypotenuse > rotateBreak) {
+          compositeDelta = compositeDelta * (((hypotenuse - rotateBreak)**12) * hypMultiplier);
+         }  else {
+          // compositeDelta = compositeDelta / ((rotateBreak - hypotenuse) * hypMultiplier);
+         };
+      console.log("-------------------");
+
+
+
       const newRotate = rotateInit + compositeDelta;
       ev.target.style.transform = `rotate(${newRotate}deg)`;
         // console.log("rotateInit " + rotateInit);
@@ -180,9 +232,19 @@ const dnd = () => {
       rotateInit = getCurrentRotation(ev.target);
     }
 
+
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+////////////////////    DRAG AND DROP    /////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+
     const dragstart_handler = (ev) => {
+        rotateInit = getCurrentRotation(ev.target);
+        console.log(rotateInit);
       // ev.preventDefault();
       currentDrag = ev.target;
+        currentDrag.style.transform = "rotate(${rotateInit}deg)";
         ev.dataTransfer.setData("application/my-app", currentDrag.id);
         // currentDrag.addEventListener("onMouseUp", dropChord(event), false);
         setMouseOffsets();
@@ -218,18 +280,15 @@ const dnd = () => {
       // console.log("dragover_handler");
       ev.preventDefault();
 
-      checkBoundaries (ev);
+      checkBoundaries(ev);
 
-      if (rotating) {
-        console.log("fdfdsfdsfDSFdsF");
-        } else {
-        let overlap = 0;
-        Array.from(ev.target.children).forEach(function(element) {
-          if (element != currentDrag && dragIntersection(ev, element)) {
-            console.log('true');
-          }
-        });
-      }
+
+      let overlap = 0;
+      Array.from(ev.target.children).forEach(function(element) {
+        if (element != currentDrag && dragIntersection(ev, element)) {
+          console.log('true');
+        }
+      });
 
     };
 
