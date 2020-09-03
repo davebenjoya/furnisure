@@ -6,6 +6,8 @@
   --disc-circ: 200px;
   --disc-left: 0px;
   --disc-top: 0px;
+  --disc-fill: rgba(256,256, 256, 0);
+  --disc-stroke: rgba(256,256, 256, .4);
 }
 
 #library-container {
@@ -34,9 +36,9 @@
   left: var(--disc-left);
   top: var(--disc-top);
     position: absolute;
-  background-color: rgba(256,256, 256, .5);
+  background-color: var(--disc-fill);
   border-radius: 50%;
-  border: 1px solid black;
+  border: 6px dashed var(--disc-stroke);
   z-index: 9;
 }
 

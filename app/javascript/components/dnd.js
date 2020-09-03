@@ -12,12 +12,6 @@ const dnd = () => {
     let startX = 0;
     let startY =0;
 
-    const rotateHandles = `<div id='handles'>
-    <div id='handle-top-left'>xxxx</div>
-    <div id='handle-top-right'>xxxx</div>
-    <div id='handle-bottom-left'>xxxx</div>
-    <div id='handle-bottom-right'>xxxx</div>
-    </div>`
 
     const rotateDisc = `<div id='disc'></div>`;
     document.addEventListener('keydown', logKey);
@@ -35,6 +29,7 @@ const dnd = () => {
         // clone.addEventListener('mouseout', hideRotateHandles);
       });
         rotating = true;
+        // console.log(currentRotate);
         if (currentRotate) {
           currentRotate.parentNode.insertAdjacentHTML('beforebegin', rotateDisc);
           currentRotate.querySelector('#disc').style.width = currentRotate.style.width;
@@ -51,7 +46,7 @@ const dnd = () => {
         clone.draggable =  true;
         clone.addEventListener('dragstart', dragstart_handler);
         clone.removeEventListener('mouseover', showRotateHandles);
-        // clone.removeEventListener('mouseout', hideRotateHandles);
+        clone.removeEventListener('mouseout', hideRotateHandles);
       });
         rotating = false;
         hideRotateRemote();
@@ -74,12 +69,17 @@ const dnd = () => {
       disc.style.setProperty('--disc-circ', parseInt(currentRotate.style.width) + 20 + 'px');
       const newTop = (((disc.getBoundingClientRect().height / 2) * -1) + (currentRotate.getBoundingClientRect().height /2 ) + 'px');
       const newLeft = (((disc.getBoundingClientRect().width / 2) * -1) + (currentRotate.getBoundingClientRect().width /2 ) + 'px');
-      console.log("disc.getBoundingClientRect().height/2  "  + disc.getBoundingClientRect().height/2);
-      console.log("currentRotate.getBoundingClientRect().height/2  "   + currentRotate.getBoundingClientRect().height/2);
+      // console.log("disc.getBoundingClientRect().height/2  "  + disc.getBoundingClientRect().height/2);
+      // console.log("currentRotate.getBoundingClientRect().height/2  "   + currentRotate.getBoundingClientRect().height/2);
 
       disc.style.setProperty('--disc-top', newTop);
       disc.style.setProperty('--disc-left', newLeft);
-      // currentRotate.addEventListener('mousedown', clickRotate);
+
+      const rgba = currentRotate.style.backgroundColor.replace("rgb", "rgba");
+      const strokeColor = rgba.replace(")" , ", 0.3)");
+      console.log(strokeColor);
+      disc.style.setProperty('--disc-stroke', strokeColor);
+      currentRotate.removeEventListener('mouseout', hideRotateRemote);
       currentRotate.removeEventListener('mouseover', showRotateHandles);
       disc.addEventListener('mousedown', clickRotate);
       disc.addEventListener('mouseout', hideRotateHandles);
@@ -225,6 +225,7 @@ const dnd = () => {
 
       const newRotate = rotateInit + compositeDelta;
       ev.target.style.transform = `rotate(${newRotate}deg)`;
+      currentRotate.style.transform = `rotate(${newRotate}deg)`;
         // console.log("rotateInit " + rotateInit);
 
       startX = ev.clientX;
@@ -339,9 +340,17 @@ const dnd = () => {
       return (((element2.getBoundingClientRect().x + element2.getBoundingClientRect().width) - element1.getBoundingClientRect().x) + 4);
     }
 
+
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////      D R O P    /////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+
+
+
+
     function drop_handler(ev) {
 
-        currentDrag.addEventListener('dragstart', dragstart_handler)
+      // currentRotate  = currentDrag;
       ev.preventDefault();
 
       const data = ev.dataTransfer.getData("application/my-app");
