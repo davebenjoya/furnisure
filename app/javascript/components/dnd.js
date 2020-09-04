@@ -2,8 +2,8 @@ const dnd = () => {
   const ta = document.getElementById("target-area1");
   if (ta) {
     let numClones = 0;
-    let currentDrag = null;
-    let currentRotate = null;
+    let dragPiece = null;
+    let rotatePiece = null;
     let offX = 0;
     let offY = 0;
     let rotating = false;
@@ -25,15 +25,11 @@ const dnd = () => {
       clones.forEach(clone => {
         clone.draggable=  false;
         clone.removeEventListener('dragstart', dragstart_handler);
-        clone.addEventListener('mouseover', showRotateHandles);
-        // clone.addEventListener('mouseout', hideRotateHandles);
+        clone.removeEventListener('mouseover', setRotatePiece);
       });
         rotating = true;
-        // console.log(currentRotate);
-        if (currentRotate) {
-          currentRotate.parentNode.insertAdjacentHTML('beforebegin', rotateDisc);
-          currentRotate.querySelector('#disc').style.width = currentRotate.style.width;
-          currentRotate.querySelector('#disc').style.height = currentRotate.style.width;
+        if (rotatePiece) {
+          showDisc();
         };
       }
     }
@@ -45,11 +41,16 @@ const dnd = () => {
       clones.forEach(clone => {
         clone.draggable =  true;
         clone.addEventListener('dragstart', dragstart_handler);
-        clone.removeEventListener('mouseover', showRotateHandles);
-        clone.removeEventListener('mouseout', hideRotateHandles);
+        clone.addEventListener('mouseover', setRotatePiece);
+        clone.addEventListener('mouseout', clearRotatePiece);
+        // clone.removeEventListener('mouseover', showDisc);
+        // clone.removeEventListener('mouseout', hideDisc);
       });
         rotating = false;
-        hideRotateRemote();
+        if (rotatePiece) {
+          rotatePiece.querySelector('#disc').remove();
+          // hideDiscRemote();  //  function does not set currentRotate = null
+        };
       }
     }
 
@@ -60,41 +61,47 @@ const dnd = () => {
 /////////////////////////////////////////////////////////////////////////////
 
 
+    function setRotatePiece(ev) {  // piece rollover function
+      rotatePiece = ev.target;
+        console.log('setRotatePiece');
+    }
 
-    function showRotateHandles (ev) {
-      currentRotate = ev.target;
-      currentRotate.insertAdjacentHTML('beforeend', rotateDisc);
-      const disc = currentRotate.querySelector("#disc");
+    function clearRotatePiece(ev) {
+      rotatePiece = null;
+    }
 
-      disc.style.setProperty('--disc-circ', parseInt(currentRotate.style.width) + 20 + 'px');
-      const newTop = (((disc.getBoundingClientRect().height / 2) * -1) + (currentRotate.getBoundingClientRect().height /2 ) + 'px');
-      const newLeft = (((disc.getBoundingClientRect().width / 2) * -1) + (currentRotate.getBoundingClientRect().width /2 ) + 'px');
+
+    function showDisc (ev) {
+      console.log("show disc");
+      rotatePiece.removeEventListener('mouseover', clearRotatePiece)
+      rotatePiece.removeEventListener('mouseout', clearRotatePiece)
+      rotatePiece.insertAdjacentHTML('beforeend', rotateDisc);
+      const disc = rotatePiece.querySelector("#disc");
+      disc.style.setProperty('--disc-circ', parseInt(rotatePiece.style.width) + 20 + 'px');
+      const newTop = (((disc.getBoundingClientRect().height / 2) * -1) + (rotatePiece.getBoundingClientRect().height /2 ) - 4 + 'px');
+      const newLeft = (((disc.getBoundingClientRect().width / 2) * -1) + (rotatePiece.getBoundingClientRect().width /2 ) +  'px');
       // console.log("disc.getBoundingClientRect().height/2  "  + disc.getBoundingClientRect().height/2);
-      // console.log("currentRotate.getBoundingClientRect().height/2  "   + currentRotate.getBoundingClientRect().height/2);
+      // console.log("rotatePiece.getBoundingClientRect().height/2  "   + rotatePiece.getBoundingClientRect().height/2);
 
       disc.style.setProperty('--disc-top', newTop);
       disc.style.setProperty('--disc-left', newLeft);
 
-      const rgba = currentRotate.style.backgroundColor.replace("rgb", "rgba");
+      const rgba = rotatePiece.style.backgroundColor.replace("rgb", "rgba");
       const strokeColor = rgba.replace(")" , ", 0.3)");
-      console.log(strokeColor);
       disc.style.setProperty('--disc-stroke', strokeColor);
-      currentRotate.removeEventListener('mouseout', hideRotateRemote);
-      currentRotate.removeEventListener('mouseover', showRotateHandles);
+      rotatePiece.removeEventListener('mouseout', hideDiscRemote);
+      rotatePiece.removeEventListener('mouseover', showDisc);
       disc.addEventListener('mousedown', clickRotate);
-      disc.addEventListener('mouseout', hideRotateHandles);
+      disc.addEventListener('mouseout', hideDisc);
       document.addEventListener('mouseup', unclickRotate);
     }
 
-    function hideRotateRemote() {
-      if (currentRotate) {
-        currentRotate.addEventListener('mouseover', showRotateHandles);
-        const handles = currentRotate.querySelector("#handles");
-        if (handles) {
-          handles.remove();
-        }
-        const disc = currentRotate.querySelector("#disc");
+    function hideDiscRemote() {
+      if (rotatePiece) {
+        const disc = rotatePiece.querySelector("#disc");
         if (disc) {
+        // disc.removeEventListener('mouseover', showDisc);
+          console.log ("hideDiscRemote "  );
           disc.remove();
         }
       }
@@ -102,9 +109,10 @@ const dnd = () => {
       document.removeEventListener('mousemove' , trackRotation);
     }
 
-    function hideRotateHandles () {
-      hideRotateRemote();
-      currentRotate = null;
+    function hideDisc () {
+      hideDiscRemote();
+          console.log ("hideDisc rollout " );
+      rotatePiece = null;
     }
 
 
@@ -135,7 +143,7 @@ const dnd = () => {
     function clickRotate(ev) {
       startX = ev.clientX;
       startY = ev.clientY;
-      rotateInit = getCurrentRotation(ev.target);
+      rotateInit = getCurrentRotation(rotatePiece);
       document.addEventListener('mousemove' , trackRotation);
     }
 
@@ -144,7 +152,7 @@ const dnd = () => {
       ev.target.removeEventListener('mouseup' , unclickRotate);
       document.removeEventListener('mousemove' , trackRotation);
       if (ev.shiftKey) {
-      const myRotate = getCurrentRotation(ev.target);
+      const myRotate = getCurrentRotation(rotatePiece);
       const rotateToSnap = myRotate % 45;
       let snappedRotate = 0;
       if (rotateToSnap < 22.5 ) {
@@ -152,7 +160,7 @@ const dnd = () => {
       } else {
         snappedRotate  = myRotate + (45 - rotateToSnap);
       }
-      ev.target.style.transform = `rotate(${snappedRotate}deg`;
+      rotatePiece.transform = `rotate(${snappedRotate}deg`;
       }
     }
 
@@ -161,8 +169,8 @@ const dnd = () => {
 
 
     function trackRotation (ev) {
-      const fulcrumX = ev.target.getBoundingClientRect().x + ( ev.target.getBoundingClientRect().width / 2 );
-      const fulcrumY = ev.target.getBoundingClientRect().y + ( ev.target.getBoundingClientRect().height / 2 );
+      const fulcrumX = rotatePiece.getBoundingClientRect().x + ( rotatePiece.getBoundingClientRect().width / 2 );
+      const fulcrumY = rotatePiece.getBoundingClientRect().y + ( rotatePiece.getBoundingClientRect().height / 2 );
       const compStyle = window.getComputedStyle(ev.target);
       const matrix = compStyle.transform.split("(");
       if (matrix[1]) {
@@ -225,7 +233,7 @@ const dnd = () => {
 
       const newRotate = rotateInit + compositeDelta;
       ev.target.style.transform = `rotate(${newRotate}deg)`;
-      currentRotate.style.transform = `rotate(${newRotate}deg)`;
+      rotatePiece.style.transform = `rotate(${newRotate}deg)`;
         // console.log("rotateInit " + rotateInit);
 
       startX = ev.clientX;
@@ -244,10 +252,10 @@ const dnd = () => {
         rotateInit = getCurrentRotation(ev.target);
         console.log(rotateInit);
       // ev.preventDefault();
-      currentDrag = ev.target;
-        currentDrag.style.transform = "rotate(${rotateInit}deg)";
-        ev.dataTransfer.setData("application/my-app", currentDrag.id);
-        // currentDrag.addEventListener("onMouseUp", dropChord(event), false);
+      dragPiece = ev.target;
+        dragPiece.style.transform = "rotate(${rotateInit}deg)";
+        ev.dataTransfer.setData("application/my-app", dragPiece.id);
+        // dragPiece.addEventListener("onMouseUp", dropChord(event), false);
         setMouseOffsets();
 
         // function handleDragStart(e) {
@@ -286,7 +294,7 @@ const dnd = () => {
 
       let overlap = 0;
       Array.from(ev.target.children).forEach(function(element) {
-        if (element != currentDrag && dragIntersection(ev, element)) {
+        if (element != dragPiece && dragIntersection(ev, element)) {
           console.log('true');
         }
       });
@@ -297,9 +305,9 @@ const dnd = () => {
 
     function checkBoundaries (ev) {
       if (ev.clientX - offX <= ta.getBoundingClientRect().x) {
-        // currentDrag.style.position = 'absolute';
-        // currentDrag.style.left = ta.getBoundingClientRect().x + 'px';
-        console.log('currentDrag.id' + currentDrag.id);
+        // dragPiece.style.position = 'absolute';
+        // dragPiece.style.left = ta.getBoundingClientRect().x + 'px';
+        console.log('dragPiece.id' + dragPiece.id);
       };
       // if (ev.currentTarget.getBoundingClientRect().x + el.getBoundingClientRect().width >= ta.getBoundingClientRect().x + ta.getBoundingClientRect().width) {
       //   // (el);
@@ -308,16 +316,16 @@ const dnd = () => {
 
     function dragIntersection(ev, element) {
         // console.log('element.getBoundingClientRect().x + element.getBoundingClientRect().width > (ev.clientX - offX)   '  + (element.getBoundingClientRect().x + element.getBoundingClientRect().width > (ev.clientX - offX)));
-        // console.log(' (ev.clientX - offX) + currentDrag.getBoundingClientRect().width > element.getBoundingClientRect().x)    '  +  (ev.clientX - offX) + currentDrag.getBoundingClientRect().width > element.getBoundingClientRect().x);
+        // console.log(' (ev.clientX - offX) + dragPiece.getBoundingClientRect().width > element.getBoundingClientRect().x)    '  +  (ev.clientX - offX) + dragPiece.getBoundingClientRect().width > element.getBoundingClientRect().x);
         // console.log('(element.getBoundingClientRect().y + element.getBoundingClientRect().height < (ev.clientY - offY)   '  + (element.getBoundingClientRect().y + element.getBoundingClientRect().height < (ev.clientY - offY)));
-        // console.log('(ev.clientY - offY) + currentDrag.getBoundingClientRect().height > element.getBoundingClientRect().y)   '  + (ev.clientY - offY) + currentDrag.getBoundingClientRect().height > element.getBoundingClientRect().y);
+        // console.log('(ev.clientY - offY) + dragPiece.getBoundingClientRect().height > element.getBoundingClientRect().y)   '  + (ev.clientY - offY) + dragPiece.getBoundingClientRect().height > element.getBoundingClientRect().y);
 
 
 
        return ( element.getBoundingClientRect().x + element.getBoundingClientRect().width > (ev.clientX - offX) &&
-          (ev.clientX - offX) + currentDrag.getBoundingClientRect().width > element.getBoundingClientRect().x) &&
+          (ev.clientX - offX) + dragPiece.getBoundingClientRect().width > element.getBoundingClientRect().x) &&
           (element.getBoundingClientRect().y + element.getBoundingClientRect().height > (ev.clientY - offY) &&
-          (ev.clientY - offY) + currentDrag.getBoundingClientRect().height > element.getBoundingClientRect().y);
+          (ev.clientY - offY) + dragPiece.getBoundingClientRect().height > element.getBoundingClientRect().y);
     }
 
     function dragLeftOverlap(ev, element) {
@@ -325,7 +333,7 @@ const dnd = () => {
     }
 
     function dragRightOverlap(ev, element) {
-        return ((ev.clientX - offX) + currentDrag.getBoundingClientRect().width) - (element.getBoundingClientRect().x );
+        return ((ev.clientX - offX) + dragPiece.getBoundingClientRect().width) - (element.getBoundingClientRect().x );
     }
 
     function arrayIntersection(element1, element2) {
@@ -350,7 +358,7 @@ const dnd = () => {
 
     function drop_handler(ev) {
 
-      // currentRotate  = currentDrag;
+      // rotatePiece  = dragPiece;
       ev.preventDefault();
 
       const data = ev.dataTransfer.getData("application/my-app");
@@ -366,6 +374,8 @@ const dnd = () => {
         el.style.height = el.dataset.roomheight + "px";
         console.log('el.dataset.roomwidth  ' +  el.dataset.roomwidth);
         el.addEventListener("dragstart", dragstart_handler);
+        el.addEventListener("mouseover", setRotatePiece);
+        el.addEventListener("mouseout", clearRotatePiece);
         // const tr = el.querySelector(".trash");
         // tr.addEventListener('click', deleteChord);
         // tr.insertAdjacentHTML("beforeend", '<div class="delete-chord"><i class="fas fa-trash"></i></div> ')
@@ -374,7 +384,7 @@ const dnd = () => {
         el  = document.getElementById(data);
       }
 
-      if (el.id != currentDrag.id) {
+      if (el.id != dragPiece.id) {
         ev.target.appendChild(el);
       }
       el.style.position = 'absolute';
