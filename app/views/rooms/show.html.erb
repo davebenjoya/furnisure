@@ -1,27 +1,39 @@
 <div class="container">
-<%= @room.name %>
+  <h2><%= @room.name %></h2>
 
 </div>
 
 <div class="container new-page-identifier mt-0" id="new-song-container">
   <div class="row" >
-    <h5 class="col-3 p-2">Library</h5>
     <div id="library-container">
       <div id="library">
         <% pieces = Piece.all.to_a %>
         <% pieces.each_with_index do  |piece, index| %>
-          <div id="piece<%= index %>" class="library-item">
+          <div id="piece<%= index %>" class="lib-item">
             <% @library_multiplier = 0.4 %>
             <% @room_multiplier = 0.8 %>
-            <%= piece.name %>
+            <h6 class='m-0' ><%= piece.name %></h6>
             <% myWidth = (piece.width * @library_multiplier).to_s  + "px" %>
             <% myHeight = (piece.depth * @library_multiplier).to_s + "px" %>
             <% width_in_room =  (piece.width * @room_multiplier) %>
             <% height_in_room =  (piece.depth * @room_multiplier) %>
-            <div id="piece image <%= index %>" draggable="true"  class="draggable"
-              style="width: <%= myWidth %>; height: <%= myHeight %>; background-color: <%= piece.color %>; border-top: 3px solid rgba(30,30,30, 0.4)"
-              data-roomwidth=<%= width_in_room %>; data-roomheight=<%= height_in_room %>;>
+            <div id="piece image <%= index %>" draggable="true"  class="draggable <%= piece.color.sub("$", "") %>"
+              style="width: <%= myWidth %>; height: <%= myHeight %>; border-top: 2px solid rgba(30,30,30, 0.4); background-color: <%= piece.color %>;
+              data-roomwidth:<%= width_in_room %>; data-roomheight:<%= height_in_room %>;">
             </div>
+
+
+
+            <% color_array = piece.available_colors.split(",") %>
+            <select name="colors" id="colors" class="form-control color-select mt-1 p-1"> value=<%= piece.color %>
+              <% color_array.each do | color | %>
+              <% if (color.gsub(" ", "") === piece.color.gsub(" ", "")) %>
+                <option selected ><%= color.sub("$", "").gsub(" ", "").gsub(/-/, " ").titleize %></option>
+              <% else %>
+                <option><%= color.sub("$", "").gsub(" ", "").gsub(/-/, " ").titleize %></option>
+              <% end %>
+              <% end %>
+            </select>
           </div>
         <% end %>
       </div>

@@ -1,3 +1,5 @@
+
+
 const dnd = () => {
   const ta = document.getElementById("target-area1");
   if (ta) {
@@ -13,26 +15,47 @@ const dnd = () => {
     let startY =0;
 
 
+    function selectColor (ev) {
+      const bg = ev.target.value.replace("$", "").replace(" ", "-").toLowerCase();
+      console.log('bg' + bg);
+      // ev.target.parentNode.querySelector(".draggable").style = `backgroundColor: ${ev.target.value};`;
+      // ev.target.parentNode.querySelector(".draggable").classList.remove("draggable camel");
+      ev.target.parentNode.querySelector(".draggable").className = "draggable";
+      ev.target.parentNode.querySelector(".draggable").classList.add(`${bg}`);
+    }
+
+
+    const selects = document.querySelectorAll(".color-select");
+    selects.forEach(select => {
+      // select.value =
+      select.addEventListener('change', selectColor);
+    })
+
+
     const rotateDisc = `<div id='disc'></div>`;
     document.addEventListener('keydown', logKey);
     document.addEventListener('keyup', unlogKey);
 
     function logKey(e) {
+
+      // e.preventDefault();
       if(e.code === "AltLeft" ||  e.code === "AltRight") {
-      ta.removeEventListener('dragover', dragover_handler);
-      ta.removeEventListener('drop', drop_handler);
-      const clones = Array.from(document.querySelectorAll(".clone"));
-      clones.forEach(clone => {
-        clone.draggable=  false;
-        clone.removeEventListener('dragstart', dragstart_handler);
-        clone.removeEventListener('mouseover', setRotatePiece);
-      });
+        ta.removeEventListener('dragover', dragover_handler);
+        ta.removeEventListener('drop', drop_handler);
+        const clones = Array.from(document.querySelectorAll(".clone"));
+        clones.forEach(clone => {
+          clone.draggable=  false;
+          clone.removeEventListener('dragstart', dragstart_handler);
+          // clone.removeEventListener('mouseover', setRotatePiece);
+        });
+        console.log('logKey' + rotatePiece);
         rotating = true;
         if (rotatePiece) {
           showDisc();
         };
       }
     }
+
     function unlogKey(e) {
       if(e.code === "AltLeft" ||  e.code === "AltRight") {
       ta.addEventListener('dragover', dragover_handler);
@@ -41,7 +64,7 @@ const dnd = () => {
       clones.forEach(clone => {
         clone.draggable =  true;
         clone.addEventListener('dragstart', dragstart_handler);
-        clone.addEventListener('mouseover', setRotatePiece);
+        // clone.addEventListener('mouseover', setRotatePiece);
         clone.addEventListener('mouseout', clearRotatePiece);
         // clone.removeEventListener('mouseover', showDisc);
         // clone.removeEventListener('mouseout', hideDisc);
@@ -62,11 +85,22 @@ const dnd = () => {
 
 
     function setRotatePiece(ev) {  // piece rollover function
+
+      // ev.preventDefault();
+
       rotatePiece = ev.target;
         console.log('setRotatePiece');
+        if (rotating) {
+          showDisc();
+        }
     }
 
     function clearRotatePiece(ev) {
+        console.log('clearRotatePiece');
+      if (rotating) {
+        hideDisc();
+      }
+
       rotatePiece = null;
     }
 
@@ -85,14 +119,14 @@ const dnd = () => {
 
       disc.style.setProperty('--disc-top', newTop);
       disc.style.setProperty('--disc-left', newLeft);
-
-      const rgba = rotatePiece.style.backgroundColor.replace("rgb", "rgba");
+      console.log('rotatePiece.style.backgroundColor  ' + window.getComputedStyle(rotatePiece).backgroundColor);
+      const rgba = window.getComputedStyle(rotatePiece).backgroundColor.replace("rgb", "rgba");
       const strokeColor = rgba.replace(")" , ", 0.3)");
       disc.style.setProperty('--disc-stroke', strokeColor);
       rotatePiece.removeEventListener('mouseout', hideDiscRemote);
       rotatePiece.removeEventListener('mouseover', showDisc);
-      disc.addEventListener('mousedown', clickRotate);
       disc.addEventListener('mouseout', hideDisc);
+      disc.addEventListener('mousedown', clickRotate);
       document.addEventListener('mouseup', unclickRotate);
     }
 
@@ -350,7 +384,12 @@ const dnd = () => {
 
 
     //////////////////////////////////////////////////////////////////////////
-    //////////////////////      D R O P    /////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    ////////////////////                     /////////////////////////////////
+    //////////////////////     D R O P     ///////////////////////////////////
+    ///////////////////////              /////////////////////////////////////
+    //////////////////////////        ////////////////////////////////////////
+    ////////////////////////////    //////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
 
 
@@ -358,7 +397,6 @@ const dnd = () => {
 
     function drop_handler(ev) {
 
-      // rotatePiece  = dragPiece;
       ev.preventDefault();
 
       const data = ev.dataTransfer.getData("application/my-app");
@@ -376,13 +414,15 @@ const dnd = () => {
         el.addEventListener("dragstart", dragstart_handler);
         el.addEventListener("mouseover", setRotatePiece);
         el.addEventListener("mouseout", clearRotatePiece);
+        console.log ("clone " + el)
         // const tr = el.querySelector(".trash");
         // tr.addEventListener('click', deleteChord);
         // tr.insertAdjacentHTML("beforeend", '<div class="delete-chord"><i class="fas fa-trash"></i></div> ')
       } else {
-        // console.log ("no clone")
         el  = document.getElementById(data);
       }
+
+      rotatePiece  = el;
 
       if (el.id != dragPiece.id) {
         ev.target.appendChild(el);

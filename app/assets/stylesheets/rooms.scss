@@ -2,12 +2,30 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: https://sass-lang.com/
 
+
+
+@import "../config/colors";
+
+
 :root {
   --disc-circ: 200px;
   --disc-left: 0px;
   --disc-top: 0px;
   --disc-fill: rgba(256,256, 256, 0);
   --disc-stroke: rgba(256,256, 256, .4);
+}
+
+option {
+  color:black;
+  font-size:14px;
+}
+
+.lib-item {
+  margin: 4px 0;
+  padding: 4px;
+  border: 1px solid $independence;
+  border-radius: 4px;
+  background-color: $light-grey;
 }
 
 #library-container {
@@ -95,16 +113,17 @@ margin: 0;
   // width: 67%;
   padding: 0px;
   border: 1px solid #D0CFCE;
-  background-size: 25%;
   background-repeat: repeat;
 }
 
 .pine {
   background-image: image-url('pine.jpg');
+  background-size: 50%;
 }
 
 .grey_carpet {
   background-image: image-url('grey_carpet.jpg');
+  background-size: 30%;
 }
 
 
@@ -151,3 +170,17 @@ margin: 0;
   // background-color: $redwood !important;
   // font-size: 40px;
 }
+
+
+.redwood { background-color: $redwood; }
+.amber { background-color: $amber; }
+.kobe { background-color: $kobe; }
+.ming { background-color: $ming; }
+.camel { background-color: $camel; }
+.alice-blue { background-color: $alice-blue; }
+.light-grey { background-color: $light-grey; }
+.eagle-green { background-color: $eagle-green; }
+.blanched-almond { background-color: $blanched-almond; }
+.rich-black { background-color: $rich-black; }
+.independence { background-color: $independence; }
+
