@@ -10,9 +10,15 @@ const dnd = () => {
     let offY = 0;
     let rotating = false;
     let rotateInit = 0;
-    const rotateBreak = 42; // distance from moment of rotation where rotated div needs to be 'sped up' or 'slowed down' to track cursor
     let startX = 0;
     let startY =0;
+    let fulcrumX = 0;
+    let fulcrumY = 0;
+    const rotateBreak = 42; // distance from center of rotated div where rotated div needs to be 'sped up' or 'slowed down' to track cursor
+    const rotateDisc = `<div id='disc'></div>`;
+
+    document.addEventListener('keydown', logKey);
+    document.addEventListener('keyup', unlogKey);
 
 
     function selectColor (ev) {
@@ -27,16 +33,12 @@ const dnd = () => {
 
     const selects = document.querySelectorAll(".color-select");
     selects.forEach(select => {
-      // select.value =
       select.addEventListener('change', selectColor);
     })
 
 
-    const rotateDisc = `<div id='disc'></div>`;
-    document.addEventListener('keydown', logKey);
-    document.addEventListener('keyup', unlogKey);
-
     function logKey(e) {
+
 
       // e.preventDefault();
       if(e.code === "AltLeft" ||  e.code === "AltRight") {
@@ -51,6 +53,7 @@ const dnd = () => {
         console.log('logKey' + rotatePiece);
         rotating = true;
         if (rotatePiece) {
+          console.log(rotateInit);
           showDisc();
         };
       }
@@ -64,12 +67,13 @@ const dnd = () => {
       clones.forEach(clone => {
         clone.draggable =  true;
         clone.addEventListener('dragstart', dragstart_handler);
-        // clone.addEventListener('mouseover', setRotatePiece);
+        clone.addEventListener('mouseover', setRotatePiece);
         clone.addEventListener('mouseout', clearRotatePiece);
         // clone.removeEventListener('mouseover', showDisc);
         // clone.removeEventListener('mouseout', hideDisc);
       });
         rotating = false;
+        console.log('something');
         if (rotatePiece) {
           rotatePiece.querySelector('#disc').remove();
           // hideDiscRemote();  //  function does not set currentRotate = null
@@ -106,20 +110,33 @@ const dnd = () => {
 
 
     function showDisc (ev) {
-      console.log("show disc");
-      rotatePiece.removeEventListener('mouseover', clearRotatePiece)
+      rotateInit = getCurrentRotation(rotatePiece);
+
+      // fulcrumX = rotatePiece.getBoundingClientRect().x + ( rotatePiece.getBoundingClientRect().width / 2 );
+      // fulcrumY = rotatePiece.getBoundingClientRect().y + ( rotatePiece.getBoundingClientRect().height / 2 );
+
+      rotatePiece.removeEventListener('mouseover', setRotatePiece)
       rotatePiece.removeEventListener('mouseout', clearRotatePiece)
       rotatePiece.insertAdjacentHTML('beforeend', rotateDisc);
       const disc = rotatePiece.querySelector("#disc");
-      disc.style.setProperty('--disc-circ', parseInt(rotatePiece.style.width) + 20 + 'px');
-      const newTop = (((disc.getBoundingClientRect().height / 2) * -1) + (rotatePiece.getBoundingClientRect().height /2 ) - 4 + 'px');
-      const newLeft = (((disc.getBoundingClientRect().width / 2) * -1) + (rotatePiece.getBoundingClientRect().width /2 ) +  'px');
-      // console.log("disc.getBoundingClientRect().height/2  "  + disc.getBoundingClientRect().height/2);
-      // console.log("rotatePiece.getBoundingClientRect().height/2  "   + rotatePiece.getBoundingClientRect().height/2);
+      const diameter = parseFloat(rotatePiece.style.width)
+      disc.style.setProperty('--disc-diam', diameter + 20 + 'px');
+      // const newTop = ((((disc.getBoundingClientRect().height / 2) * -1) + rotatePiece.getBoundingClientRect().height /2 ) + (trigOffsetX * trigMultiplier) + 'px');
+      // const newLeft = ((((disc.getBoundingClientRect().width / 2) * -1) + rotatePiece.getBoundingClientRect().width /2 ) + (trigOffsetY * trigMultiplier) +  'px');
+
+      const xMidpoint = rotatePiece.getBoundingClientRect().x + (rotatePiece.getBoundingClientRect().width/2) - rotatePiece.parentNode.getBoundingClientRect().x;
+
+      const yMidpoint = rotatePiece.getBoundingClientRect().y + (rotatePiece.getBoundingClientRect().height/2) - rotatePiece.parentNode.getBoundingClientRect().y;
+
+      const newLeft = -10 + 'px';
+      const newTop =  (((diameter / 2) * -1) + (parseFloat(rotatePiece.style.height)/2) - 10 ) + 'px';
+
+      console.log('(disc.style.width / 2)  '  + disc.style.cssText);
+      console.log('newLeft '  + newLeft);
+
 
       disc.style.setProperty('--disc-top', newTop);
       disc.style.setProperty('--disc-left', newLeft);
-      console.log('rotatePiece.style.backgroundColor  ' + window.getComputedStyle(rotatePiece).backgroundColor);
       const rgba = window.getComputedStyle(rotatePiece).backgroundColor.replace("rgb", "rgba");
       const strokeColor = rgba.replace(")" , ", 0.3)");
       disc.style.setProperty('--disc-stroke', strokeColor);
@@ -182,8 +199,8 @@ const dnd = () => {
     }
 
     function unclickRotate(ev) {
-      ev.target.removeEventListener('mousedown', clickRotate);
-      ev.target.removeEventListener('mouseup' , unclickRotate);
+      // ev.target.removeEventListener('mousedown', clickRotate);
+      // ev.target.removeEventListener('mouseup' , unclickRotate);
       document.removeEventListener('mousemove' , trackRotation);
       if (ev.shiftKey) {
       const myRotate = getCurrentRotation(rotatePiece);
@@ -198,21 +215,22 @@ const dnd = () => {
       }
     }
 
-
-
-
+    function toRadians (angle) {
+      return angle * (Math.PI / 180);
+    }
 
     function trackRotation (ev) {
-      const fulcrumX = rotatePiece.getBoundingClientRect().x + ( rotatePiece.getBoundingClientRect().width / 2 );
-      const fulcrumY = rotatePiece.getBoundingClientRect().y + ( rotatePiece.getBoundingClientRect().height / 2 );
+      fulcrumX = rotatePiece.getBoundingClientRect().x + ( rotatePiece.getBoundingClientRect().width / 2 );
+      fulcrumY = rotatePiece.getBoundingClientRect().y + ( rotatePiece.getBoundingClientRect().height / 2 );
+      // console.log('fulcrumX '  + fulcrumX);
+      // console.log('fulcrumY '  + fulcrumY);
       const compStyle = window.getComputedStyle(ev.target);
       const matrix = compStyle.transform.split("(");
       if (matrix[1]) {
         const matrixArray =  matrix[1].split(",");
-        let rotation = ((180/Math.PI) * Math.atan2( ((0*matrixArray[2])+(1*matrixArray[3])),((0*matrixArray[0])-(1*matrixArray[1]))) - 90);
-        // console.log(rotation);
+        const rotation = ((180/Math.PI) * Math.atan2( ((0*matrixArray[2])+(1*matrixArray[3])),((0*matrixArray[0])-(1*matrixArray[1]))) - 90);
       };
-
+//
       const xDiff = ev.clientX - fulcrumX;
       const yDiff = ev.clientY - fulcrumY;
       const hypotenuse = Math.sqrt((xDiff**2) + (yDiff**2));
@@ -254,14 +272,13 @@ const dnd = () => {
           break;
       }
       // ev.target.style.transform = `rotate(30deg)`;
-      console.log("-------------------");
-      console.log(compositeDelta);
+      // console.log("-------------------");
+      // console.log(compositeDelta);
       if (hypotenuse > rotateBreak) {
-          compositeDelta = compositeDelta * (((hypotenuse - rotateBreak)**12) * hypMultiplier);
+          // compositeDelta = compositeDelta * (((hypotenuse - rotateBreak)**12) * hypMultiplier);
          }  else {
-          // compositeDelta = compositeDelta / ((rotateBreak - hypotenuse) * hypMultiplier);
+          // compositeDelta = compositeDelta * (((rotateBreak - hypotenuse)**12) * hypMultiplier);
          };
-      console.log("-------------------");
 
 
 
@@ -408,13 +425,18 @@ const dnd = () => {
         el.id = "clone" + numClones;
         numClones ++ ;
         el.classList.add('clone');
+        // el.style.left = (((el.dataset.roomwidth - parseInt(el.style.width))/2) * -1) + "px";
+        // el.style.top = (((el.dataset.roomheight - parseInt(el.style.height))/2) * -1) + "px";
         el.style.width = el.dataset.roomwidth + "px";
         el.style.height = el.dataset.roomheight + "px";
-        console.log('el.dataset.roomwidth  ' +  el.dataset.roomwidth);
+        el.style.transition = "height .5s";
+
+
+        // console.log('el.dataset.roomwidth  ' +  el.dataset.roomwidth);
         el.addEventListener("dragstart", dragstart_handler);
         el.addEventListener("mouseover", setRotatePiece);
         el.addEventListener("mouseout", clearRotatePiece);
-        console.log ("clone " + el)
+        // console.log ("clone " + el)
         // const tr = el.querySelector(".trash");
         // tr.addEventListener('click', deleteChord);
         // tr.insertAdjacentHTML("beforeend", '<div class="delete-chord"><i class="fas fa-trash"></i></div> ')
@@ -449,25 +471,6 @@ const dnd = () => {
     }
 
     document.querySelector('#target-area1').addEventListener('drop', drop_handler);
-
-    const deleteChord = (ev) => {
-      const chord = (ev.target.parentNode.parentNode.parentNode.parentNode);
-      console.log('el');
-      chord.parentNode.removeChild(chord);
-    }
-
-    const deleteLeft = (el) => {
-      el.remove();
-      // const left =  el.style.left;
-      // el.addEventListener('transitionend', () => el.remove());
-      // // el.style = 'transform: scale(0, .5); opacity:0; transition: all .5s;';
-      // el.style = 'opacity:0; left:${left}; transition: all .5s;';
-    }
-
-
-
-
-
 
 
   }

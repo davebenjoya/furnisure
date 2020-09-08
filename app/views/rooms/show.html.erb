@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container pt-2">
   <h2><%= @room.name %></h2>
 
 </div>
@@ -11,15 +11,15 @@
         <% pieces.each_with_index do  |piece, index| %>
           <div id="piece<%= index %>" class="lib-item">
             <% @library_multiplier = 0.4 %>
-            <% @room_multiplier = 0.8 %>
+            <% @room_multiplier = 0.7 %>
             <h6 class='m-0' ><%= piece.name %></h6>
             <% myWidth = (piece.width * @library_multiplier).to_s  + "px" %>
             <% myHeight = (piece.depth * @library_multiplier).to_s + "px" %>
             <% width_in_room =  (piece.width * @room_multiplier) %>
             <% height_in_room =  (piece.depth * @room_multiplier) %>
             <div id="piece image <%= index %>" draggable="true"  class="draggable <%= piece.color.sub("$", "") %>"
-              style="width: <%= myWidth %>; height: <%= myHeight %>; border-top: 2px solid rgba(30,30,30, 0.4); background-color: <%= piece.color %>;
-              data-roomwidth:<%= width_in_room %>; data-roomheight:<%= height_in_room %>;">
+              style='width: <%= myWidth %>; height: <%= myHeight %>; border-top: 2px solid rgba(30,30,30, 0.4); background-color: "${piece.color}";'
+              data-roomwidth= <%= width_in_room %> data-roomheight=<%= height_in_room %>>
             </div>
 
 
