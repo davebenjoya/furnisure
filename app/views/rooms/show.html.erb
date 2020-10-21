@@ -17,7 +17,7 @@
             <% myHeight = (piece.depth * @library_multiplier).to_s + "px" %>
             <% width_in_room =  (piece.width * @room_multiplier) %>
             <% height_in_room =  (piece.depth * @room_multiplier) %>
-            <div id="piece image <%= index %>" draggable="true"  class="draggable <%= piece.color.sub("$", "") %>"
+            <div id="piece image <%= index %>" draggable="true"  class="draggable <%= piece.color.sub("$", "") %>" data-name="<%= piece.name %>" data-color="<%= piece.color %>"
               style='width: <%= myWidth %>; height: <%= myHeight %>; border-top: 2px solid rgba(30,30,30, 0.4); background-color: "${piece.color}";'
               data-roomwidth= <%= width_in_room %> data-roomheight=<%= height_in_room %>>
             </div>
@@ -39,6 +39,8 @@
       </div>
       <%= render partial: "room" %>
     </div>
+    <%= image_tag  'arm_red.jpg', id:"big-image", class:'big-image' %>
+      <!-- <img id="big-image" src="../../assets/images/arm_red.jpg" alt=""> -->
       </div>
     </div>
     </div>

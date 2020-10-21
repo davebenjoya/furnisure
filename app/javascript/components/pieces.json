@@ -1,0 +1,28 @@
+{ "pieces":
+  [
+    {
+    "name": "Armoire",
+    "colors": {"$redwood":"arm_red.jpg", "$camel":"arm_cam.jpg", "$alice-blue":"arm_alice.jpg","$eagle-green":"arm_eagle.jpg"}
+    },
+    {
+    "name": "Chifferobe",
+    "colors": {"$kobe":"chiff_kobe.jpg", "$alice-blue":"chiff_alice.jpg", "$eagle-green":"chiff_eagle.jpg"}
+    },
+    {
+    "name": "Hutch",
+    "colors": {"$redwood":"hutch_red.jpg", "$camel":"hutch_cam.jpg", "$amber":"hutch_amber.jpg", "$independence":"hutch_ind.jpg"}
+    },
+    {
+    "name": "Sideboard",
+    "colors": {"$ming":"side_ming.jpg", "$camel":"side_cam.jpg", "$alice-blue":"side_alice.jpg", "$eagle-green":"side_eagle.jpg"}
+    },
+    {
+    "name": "Schrank",
+    "colors": {"$rich-black":"schrank_rich.jpg", "$independence":"schrank_ind.jpg", "$amber":"schrank_amber.jpg"}
+    },
+    {
+    "name": "Breakfront",
+    "colors": {"$camel":"break_cam.jpg", "$alice-blue":"break_alice.jpg", "$eagle-green":"break_eagle.jpg", "$blanched-almond":"break_blanch.jpg"}
+    }
+  ]
+}

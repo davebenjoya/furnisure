@@ -1,4 +1,4 @@
-
+import pieces from "./pieces.json"
 
 const dnd = () => {
   const ta = document.getElementById("target-area1");
@@ -93,14 +93,30 @@ const dnd = () => {
       // ev.preventDefault();
 
       rotatePiece = ev.target;
-        console.log('setRotatePiece');
         if (rotating) {
           showDisc();
         }
+        pieces.pieces.forEach(piece => {
+        if (piece.name === ev.target.dataset.name) {
+          ;
+          // piece.colors.forEach( clr => {
+            if (ev.target.dataset.color in piece.colors) {
+             const newImg  = piece.colors[ev.target.dataset.color];
+             const oldSrc = document.querySelector("#big-image").src
+             const urlArray = oldSrc.split("/");
+             const oldImg =  (urlArray[urlArray.length - 1]);
+             const newSrc = oldSrc.replace(oldImg, newImg);
+             console.log (oldSrc);
+             document.querySelector("#big-image").src = newSrc;
+              document.querySelector("#big-image").classList.add("big-image-show");
+            }
+          // });
+        }
+        });
     }
 
     function clearRotatePiece(ev) {
-        console.log('clearRotatePiece');
+      document.querySelector("#big-image").classList.remove("big-image-show");
       if (rotating) {
         hideDisc();
       }

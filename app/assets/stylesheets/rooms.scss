@@ -13,11 +13,25 @@
   --disc-top: 0px;
   --disc-fill: rgba(256,256, 256, 0);
   --disc-stroke: rgba(256,256, 256, .4);
+  --big-image-width: 220px;
 }
 
 option {
   color:black;
   font-size:14px;
+}
+
+#big-image {
+  width: var(--big-image-width);
+
+}
+
+.big-image {
+  visibility: hidden;
+}
+
+.big-image-show {
+  visibility: visible;
 }
 
 .lib-item {
